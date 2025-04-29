@@ -83,5 +83,6 @@ MIT License (or 개인 사용 목적)
 ---
 
 ## 📬 Contact  
-**gsi** : [your-email@example.com]
+**gsi** : [gsi4517091@gmail.com], 010-9204-3206
+
 
