@@ -1,0 +1,103 @@
+작업내용 기록
+
+📂 1. var 폴더에 step3-tts 폴더 생성
+sudo mkdir /var/step3-tts
+sudo mkdir /var/step3-tts/kaggle-dataset
+
+👤 2. gsi 계정에게 접근 권한 부여
+sudo chown gsi:gsi /var/step3-tts
+sudo chmod 755 /var/step3-tts/kaggle-dataset
+
+
+📦 3. 데이터셋 복사
+sudo cp -r /home/gsi/kss-root/* /var/step3-tts/kaggle-dataset/
+kaggle-dataset 폴더 안에 kss-root 폴더가 들어가는 게 아니라, 
+kss-root 안의 내용물만 kaggle-dataset에 옮기고 싶다면 이렇게
+
+
+🐍 4. 파이썬 가상환경 생성 및 활성화
+python3.10 -m venv vits-env
+source vits-env/bin/activate
+
+5. pip 최신화 + 캐시 경로 변경
+pip install --upgrade pip
+export PIP_CACHE_DIR=/var/tmp
+
+
+6. 필수 패키지 설치
+sudo apt update
+sudo apt install -y ffmpeg
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118
+pip install numpy librosa phonemizer matplotlib tensorboard tqdm
+
+
+7. VITS 코드 다운로드 및 requirements 설치
+git clone https://github.com/jaywalnut310/vits.git
+cd vits
+pip install -r requirements.txt
+설치안되서 numpy==1.21.6 로 수정후 다시 실행
+설치 오류가 남.. 
+아래와 같이 수정하고 다시 진행
+
+numpy==1.21.6
+scipy==1.9.3
+matplotlib==3.5.3
+torch==2.1.2+cu118
+torchaudio==2.1.2+cu118
+librosa==0.10.1
+phonemizer==3.2.1
+tensorboard==2.14.0
+tqdm==4.66.1
+
+이걸 해도 오류가
+
+requirements.txt 에서 torch랑 torchaudio 줄 빼고
+
+pip install torch==2.1.2+cu118 torchaudio==2.1.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+pip install torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+pip install -r requirements.txt
+
+오류가 나서 다시 설치
+
+pip install contourpy==1.1.0
+
+좋아! 그러면 지금 상황 정리해서 vits 프로젝트 기준으로 호환 잘 맞는 버전으로 requirements.txt 다시 짜줄게.
+
+
+📦 정리된 requirements.txt
+numpy==1.21.6
+scipy==1.9.3
+matplotlib==3.5.3
+torch==2.1.2+cu118
+torchaudio==2.1.2+cu118
+torchvision==0.16.2+cu118
+contourpy==1.1.0
+phonemizer==3.2.1
+librosa==0.10.1
+llvmlite==0.41.1
+numba==0.58.0
+tensorboard==2.14.0
+tqdm==4.66.1
+cachetools==5.5.2
+google-auth==2.39.0
+google-auth-oauthlib==1.0.0
+oauthlib==3.2.2
+pyasn1==0.6.1
+pyasn1-modules==0.4.2
+requests-oauthlib==2.0.0
+rsa==4.9.1
+wheel==0.45.1
+📌 설치 명령
+이 파일로 requirements.txt 저장하고 아래 명령어 실행:
+
+pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu118
+※ cu118 전용 패키지(torch/torchaudio/torchvision)는 --extra-index-url 옵션으로 같이 설치 가능해.
+
+혹시 프로젝트 내 requirements.txt 파일 위치 알려주면 내가 바로 파일 내용으로 저장하는 명령도 알려줄게.
+필요하면 말만 해! 😎
+
+
+
+여기까지 작업중인데.. 
+우선 스톱했음.. 원격으로 도저히 짜증이 나서 못함.. 
+파일을 vits에 맞게 재구성 해야 하는 부분이 남아 있음.
