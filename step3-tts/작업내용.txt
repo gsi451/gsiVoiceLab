@@ -93,11 +93,10 @@ wheel==0.45.1
 pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu118
 ※ cu118 전용 패키지(torch/torchaudio/torchvision)는 --extra-index-url 옵션으로 같이 설치 가능해.
 
-혹시 프로젝트 내 requirements.txt 파일 위치 알려주면 내가 바로 파일 내용으로 저장하는 명령도 알려줄게.
-필요하면 말만 해! 😎
+8. convert_kss_to_vits_transcript.py 파일 생성
+해당 폴더의 내용들을 확인후
+1_0000.wav|그는 괜찮은 척하려고 애쓰는 것 같았다.|그는 괜찮은 척하려고 애쓰는 것 같았다.|6|
+1_0001.wav|그녀의 사랑을 얻기 위해 애썼지만 헛수고였다.|그녀의 사랑을 얻기 위해 애썼지만 헛수고였다.|6|
 
+이런 형태로 transcript.txt 를 만든다.
 
-
-여기까지 작업중인데.. 
-우선 스톱했음.. 원격으로 도저히 짜증이 나서 못함.. 
-파일을 vits에 맞게 재구성 해야 하는 부분이 남아 있음.
