@@ -40,7 +40,6 @@ def prepare_kss_metadata(transcript_path, output_path, base_path='kss'):
     
     print(f"메타데이터 파일 생성 완료: {output_path}")
     print(f"총 {len(metadata)}개 샘플")
-```
 
 # 실행 예시
 prepare_kss_metadata(
@@ -152,13 +151,12 @@ bashpython TTS/bin/train_vocoder.py --config_path TTS/vocoder/configs/hifigan_co
   --coqpit.audio.sample_rate=22050
 ```
   
-6. 음성 스타일 변환을 위한 LoRA 적용 (가수 음성으로 미세 조정)
-python# 기본 모델을 먼저 훈련한 후, 가수 음성으로 미세 조정
-
-# Coqui TTS가 기본적으로 LoRA를 지원하지 않기 때문에 YourTTS 또는 XTTS 사용 권장
-
-# 가수 데이터셋으로 미세 조정 명령어
+6. 음성 스타일 변환을 위한 LoRA 적용 (가수 음성으로 미세 조정
 ```
+python
+# 기본 모델을 먼저 훈련한 후, 가수 음성으로 미세 조정
+# Coqui TTS가 기본적으로 LoRA를 지원하지 않기 때문에 YourTTS 또는 XTTS 사용 권장
+# 가수 데이터셋으로 미세 조정 명령어
 python TTS/bin/train_tts.py --config_path kss_yourtts_config.json \
   --restore_path /path/to/pretrained/model.pth \
   --coqpit.fine_tuning_run=true \
@@ -170,28 +168,20 @@ python TTS/bin/train_tts.py --config_path kss_yourtts_config.json \
 ```
 pythonfrom TTS.api import TTS
 import torch
-```
 
 # 디바이스 설정
-```
 device = "cuda" if torch.cuda.is_available() else "cpu"
-```
 
 # 학습된 모델 로드
-```
 tts = TTS(model_path="/path/to/kss_model.pth", 
           config_path="/path/to/kss_config.json",
           vocoder_path="/path/to/kss_vocoder.pth",
           vocoder_config_path="/path/to/kss_vocoder_config.json").to(device)
-```
 
 # 한글 텍스트를 음성으로 변환
-```
 tts.tts_to_file(text="안녕하세요, AI가 생성한 한국어 음성입니다.", file_path="output.wav")
-```
 
 # 가수 스타일로 음성 생성 (LoRA 모델 적용 후)
-```
 tts_singer = TTS(model_path="/path/to/finetune_singer_model.pth", 
                 config_path="/path/to/finetune_singer_config.json").to(device)
 tts_singer.tts_to_file(text="안녕하세요, 가수 스타일로 생성된 음성입니다.", file_path="singer_output.wav")
@@ -199,18 +189,17 @@ tts_singer.tts_to_file(text="안녕하세요, 가수 스타일로 생성된 음�
 
 8. 실용적인 팁
 
-데이터셋 분할: 학습/검증/테스트 데이터로 분할하여 과적합 방지
-데이터 확장(Augmentation): 속도, 음높이 변경 등으로 데이터 다양성 확보
-단계적 훈련: 먼저 더 작은 데이터셋으로 빠른 프로토타입 구축
-한국어 특화: 한국어 특유의 음소 처리를 위한 korean_cleaners 활용
-체크포인트 저장: 훈련 중간에 체크포인트를 자주 저장하여 학습 진행 관리
+- 데이터셋 분할: 학습/검증/테스트 데이터로 분할하여 과적합 방지
+- 데이터 확장(Augmentation): 속도, 음높이 변경 등으로 데이터 다양성 확보
+- 단계적 훈련: 먼저 더 작은 데이터셋으로 빠른 프로토타입 구축
+- 한국어 특화: 한국어 특유의 음소 처리를 위한 korean_cleaners 활용
+- 체크포인트 저장: 훈련 중간에 체크포인트를 자주 저장하여 학습 진행 관리
 
 이렇게 하면 KSS 데이터셋을 이용해 한국어 TTS 모델을 훈련하고, 나중에 가수 음성 스타일로 변환하는 작업까지 진행할 수 있습니다. 진행 중 특정 단계에서 문제가 있으시면 언제든지 질문해 주세요!
 
 
 
-
-#Coqui TTS와 폴더 구조
+# Coqui TTS와 폴더 구조
 현재 구조
 ```
 kss/
@@ -228,10 +217,10 @@ kss/
   └── transcript.v.1.4.txt
 ```
 Coqui TTS의 요구사항
-결론부터 말씀드리면: 파일들을 한 폴더로 모을 필요는 없습니다.
-Coqui TTS는 메타데이터 파일에 지정된 상대 경로나 절대 경로를 따라 오디오 파일을 찾습니다. 현재 폴더 구조를 유지한 채로 메타데이터 파일만 적절히 수정하면 됩니다.
-메타데이터 수정 방법
-기존 KSS 트랜스크립트 파일을 Coqui TTS 형식으로 변환할 때, 파일 경로를 정확히 유지하면 됩니다:
+- 결론부터 말씀드리면: 파일들을 한 폴더로 모을 필요는 없습니다.
+- Coqui TTS는 메타데이터 파일에 지정된 상대 경로나 절대 경로를 따라 오디오 파일을 찾습니다. 현재 폴더 구조를 유지한 채로 메타데이터 파일만 적절히 수정하면 됩니다.
+- 메타데이터 수정 방법
+- 기존 KSS 트랜스크립트 파일을 Coqui TTS 형식으로 변환할 때, 파일 경로를 정확히 유지하면 됩니다:
 ```
 pythonimport os
 
@@ -275,37 +264,36 @@ json"dataset": {
 }
 ```
 이렇게 설정하면, 메타데이터 파일의 경로(예: 1/1_0000.wav)에 데이터셋 경로(kss/)가 자동으로 앞에 추가되어 kss/1/1_0000.wav로 파일을 찾게 됩니다.
-메타데이터 구조
+
+##메타데이터 구조
 변환된 메타데이터 파일(metadata.csv)의 내용은 다음과 같은 형식이 됩니다:
+```
 1/1_0000.wav|그는 괜찮은 척하려고 애쓰는 것 같았다.
 1/1_0001.wav|다른 한글 텍스트...
 2/2_0000.wav|또 다른 한글 텍스트...
-데이터 로더 검증
+```
+
+##데이터 로더 검증
 학습 시작 전에 데이터 로더가 제대로 작동하는지 테스트해보는 것이 좋습니다:
 ```
-pythonfrom TTS.tts.datasets.load import load_tts_samples
+python
+from TTS.tts.datasets.load import load_tts_samples
 from TTS.tts.utils.text.tokenizer import TTSTokenizer
 from TTS.utils.audio import AudioProcessor
 import json
-```
 
 # 구성 파일 로드
-```
 with open('kss_tacotron2_config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
-```
 
 # 샘플 로드 테스트
-```
 samples = load_tts_samples(
     config['dataset']['path'],
     config['dataset']['meta_file_train'],
     config['text']['cleaner']
 )
-```
 
 # 첫 몇 개 샘플 확인
-```
 for i, sample in enumerate(samples[:5]):
     print(f"샘플 {i+1}:")
     print(f"  - 텍스트: {sample[0]}")
