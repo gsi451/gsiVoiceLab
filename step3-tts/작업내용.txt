@@ -100,11 +100,78 @@ pip install -r requirements.txt --extra-index-url https://download.pytorch.org/w
 1_0001.wav|그녀의 사랑을 얻기 위해 애썼지만 헛수고였다.|그녀의 사랑을 얻기 위해 애썼지만 헛수고였다.|6|
 ```
 이런 형태로 transcript.txt 를 만든다.
+vits에서는 2개만 허용을 해서 다르게 수정중(!!)
 ```
 VITS 학습시키려면 wav 파일과 텍스트를 한 줄로 정리된 transcript.txt가 꼭 필요한데
 KSS는 그 형태가 아니니까
 이 변환 스크립트를 통해 준비하는 거야.
 ```
 
+9. config.json 생성
+```
+/var/step3-tts/checkpoints	모델 체크포인트 저장 경로 (G_10000.pth 등)
+/var/step3-tts/logs	학습 로그, TensorBoard 로그 저장 경로
+/var/step3-tts/output	학습 중간 결과물 출력 (샘플 wav 등)
+/var/step3-tts/kaggle-dataset/kss	KSS wav 파일 폴더
+/var/step3-tts/transcript.txt	이미 생성한 학습용 텍스트 목록
 
+sudo mkdir -p /var/step3-tts/checkpoints
+sudo mkdir -p /var/step3-tts/logs
+sudo mkdir -p /var/step3-tts/output
+
+sudo chown -R gsi:gsi /var/step3-tts
+
+python3 ./vits/train.py --config /var/step3-tts/config.json --model vits
+
+```
+
+```
+{
+    "train_config": {
+      "batch_size": 32,                      // 배치 크기 (RTX 3090에 적합하게 32로 설정)
+      "learning_rate": 0.0001,               // 학습률
+      "lr_decay_rate": 0.999,                // 학습률 감소 비율
+      "lr_decay_steps": 50000,               // 학습률 감소 스텝
+      "max_epoch": 1000,                     // 학습 최대 epoch 수
+      "steps_per_checkpoint": 1000,          // 체크포인트 저장 주기 (step 단위)
+      "checkpoint_dir": "/var/step3-tts/checkpoints", // 체크포인트 저장 디렉토리
+      "log_dir": "/var/step3-tts/logs",            // 로그 디렉토리
+      "sample_rate": 22050,                  // 샘플링 주파수 (KSS는 22050 Hz)
+      "num_mels": 80,                        // Mel spectrogram의 주파수 수
+      "num_freq": 1025,                      // FFT 크기
+      "hop_size": 256,                       // hop 크기 (길이)
+      "win_size": 1024,                      // 윈도우 크기 (FFT 길이)
+      "frame_shift_ms": 12.5,                // 시간 간격
+      "preemphasis": 0.97,                   // 전처리에서의 강조 비율
+      "max_db": 100,                         // 최댓값 dB
+      "min_db": -100,                        // 최솟값 dB
+      "ref_level_db": 20,                    // 참조 레벨 dB
+      "n_fft": 2048,                         // FFT 크기
+      "hop_length": 256,                     // Hop 길이
+      "win_length": 1024,                    // 윈도우 길이
+      "use_cuda": true,                      // CUDA 사용 여부
+      "cuda_device": 0                       // 사용할 GPU (0번은 첫 번째 GPU)
+    },
+    "data_config": {
+      "text_cleaners": ["korean_cleaners"], // 한글 텍스트 정리기를 사용할 것
+      "input_texts_file": "/var/step3-tts/transcript.txt", // transcript.txt 경로
+      "audio_dir": "/var/step3-tts/kaggle-dataset/kss",          // KSS 오디오 파일 경로
+      "train_output_dir": "/var/step3-tts/output"        // 학습 후 결과물 저장 경로
+    },
+    "model_config": {
+      "encoder_hidden_size": 256,           // 인코더 히든 레이어 크기
+      "decoder_hidden_size": 256,           // 디코더 히든 레이어 크기
+      "num_layers": 3,                      // 네트워크 층 수
+      "embedding_size": 256,                // 텍스트 임베딩 크기
+      "attention_type": "multihead",        // 어텐션 타입 (multihead 추천)
+      "dropout": 0.1                        // 드롭아웃 비율
+    },
+    "inference_config": {
+      "use_mel": true,                      // 멜 스펙트로그램 사용 여부
+      "synthesis_mode": "fast",              // 합성 모드 ('fast' or 'accurate')
+      "pretrained_model_path": "/path/to/pretrained/model"  // 미리 학습된 모델 경로
+    }
+  }
+  
+```
 
