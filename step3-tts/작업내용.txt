@@ -95,8 +95,16 @@ pip install -r requirements.txt --extra-index-url https://download.pytorch.org/w
 
 8. convert_kss_to_vits_transcript.py 파일 생성
 해당 폴더의 내용들을 확인후
+```
 1_0000.wav|그는 괜찮은 척하려고 애쓰는 것 같았다.|그는 괜찮은 척하려고 애쓰는 것 같았다.|6|
 1_0001.wav|그녀의 사랑을 얻기 위해 애썼지만 헛수고였다.|그녀의 사랑을 얻기 위해 애썼지만 헛수고였다.|6|
-
+```
 이런 형태로 transcript.txt 를 만든다.
+```
+VITS 학습시키려면 wav 파일과 텍스트를 한 줄로 정리된 transcript.txt가 꼭 필요한데
+KSS는 그 형태가 아니니까
+이 변환 스크립트를 통해 준비하는 거야.
+```
+
+
 
