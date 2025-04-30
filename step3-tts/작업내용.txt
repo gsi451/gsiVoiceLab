@@ -176,3 +176,9 @@ python3 ./vits/train.py --config /var/step3-tts/config.json --model vits
 - 소스를 몇번 보니 이해가 되네.. 다시 수정하고 다시 학습 하도록 하자.
 - kss-conv 는 이미 만들어져 있으니 그 부분을 그대로 사용하면 된다.
 - 다음 스텝을 하는거야~~
+
+
+pt를 지우고 다시 시작할때
+find /var/step3-tts/kss-conv -name "*.spec.pt" -delete
+
+python3 ./vits/train.py --config /var/step3-tts/config.json --model vits
