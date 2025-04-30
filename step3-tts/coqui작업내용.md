@@ -13,6 +13,7 @@ KSS 데이터셋을 이용한 Coqui TTS 모델 훈련
 
 2. 데이터셋 전처리
 Coqui TTS는 특정 형식의 메타데이터를 필요로 합니다. 다음과 같이 전처리해야 합니다:
+```
 pythonimport pandas as pd
 import os
 
@@ -40,6 +41,7 @@ def prepare_kss_metadata(transcript_path, output_path, base_path='kss'):
     
     print(f"메타데이터 파일 생성 완료: {output_path}")
     print(f"총 {len(metadata)}개 샘플")
+```
 
 # 실행 예시
 prepare_kss_metadata(
@@ -47,9 +49,12 @@ prepare_kss_metadata(
     output_path="kss/metadata.csv",
     base_path="kss"
 )
+```
+
 3. 모델 선택 및 구성 파일 생성
 한국어 TTS 모델에 적합한 Tacotron2 + HiFiGAN 또는 VITS 구성을 추천합니다. 다음은 XTTS 모델 대신 Tacotron2 모델 구성 예시입니다:
 python# config.json 생성
+```
 import json
 
 tacotron2_config = {
@@ -129,47 +134,70 @@ tacotron2_config = {
 # 구성 파일 저장
 with open('kss_tacotron2_config.json', 'w', encoding='utf-8') as f:
     json.dump(tacotron2_config, f, indent=4, ensure_ascii=False)
+```
+
 4. 모델 훈련
 전처리와 구성 파일 생성 후 모델 훈련을 시작합니다:
+```
 bash# 터미널에서 실행
 python TTS/bin/train_tts.py --config_path kss_tacotron2_config.json
+```
+
 5. 보코더 훈련 (또는 사전 훈련된 보코더 사용)
 한국어 데이터로 훈련된 Tacotron2와 함께 사용할 HiFiGAN 보코더를 훈련하는 예시:
+```
 bashpython TTS/bin/train_vocoder.py --config_path TTS/vocoder/configs/hifigan_config.json \
   --coqpit.dataset.path="kss/" \
   --coqpit.dataset.meta_file="metadata.csv" \
   --coqpit.run_name="kss_hifigan" \
   --coqpit.audio.sample_rate=22050
+```
+  
 6. 음성 스타일 변환을 위한 LoRA 적용 (가수 음성으로 미세 조정)
 python# 기본 모델을 먼저 훈련한 후, 가수 음성으로 미세 조정
-# Coqui TTS가 기본적으로 LoRA를 지원하지 않기 때문에 YourTTS 또는 XTTS 사용 권장
-# 가수 데이터셋으로 미세 조정 명령어
 
+# Coqui TTS가 기본적으로 LoRA를 지원하지 않기 때문에 YourTTS 또는 XTTS 사용 권장
+
+# 가수 데이터셋으로 미세 조정 명령어
+```
 python TTS/bin/train_tts.py --config_path kss_yourtts_config.json \
   --restore_path /path/to/pretrained/model.pth \
   --coqpit.fine_tuning_run=true \
   --coqpit.dataset.meta_file_train="singer_metadata.csv" \
   --coqpit.run_name="singer_yourtts_finetune"
+```
+  
 7. 학습 후 모델 사용 예시
+```
 pythonfrom TTS.api import TTS
 import torch
+```
 
 # 디바이스 설정
+```
 device = "cuda" if torch.cuda.is_available() else "cpu"
+```
 
 # 학습된 모델 로드
+```
 tts = TTS(model_path="/path/to/kss_model.pth", 
           config_path="/path/to/kss_config.json",
           vocoder_path="/path/to/kss_vocoder.pth",
           vocoder_config_path="/path/to/kss_vocoder_config.json").to(device)
+```
 
 # 한글 텍스트를 음성으로 변환
+```
 tts.tts_to_file(text="안녕하세요, AI가 생성한 한국어 음성입니다.", file_path="output.wav")
+```
 
 # 가수 스타일로 음성 생성 (LoRA 모델 적용 후)
+```
 tts_singer = TTS(model_path="/path/to/finetune_singer_model.pth", 
                 config_path="/path/to/finetune_singer_config.json").to(device)
 tts_singer.tts_to_file(text="안녕하세요, 가수 스타일로 생성된 음성입니다.", file_path="singer_output.wav")
+```
+
 8. 실용적인 팁
 
 데이터셋 분할: 학습/검증/테스트 데이터로 분할하여 과적합 방지
@@ -185,6 +213,7 @@ tts_singer.tts_to_file(text="안녕하세요, 가수 스타일로 생성된 음�
 
 #Coqui TTS와 폴더 구조
 현재 구조
+```
 kss/
   ├── 1/
   │   ├── 1_0000.wav
@@ -198,11 +227,13 @@ kss/
   ├── 4/
   │   └── ...
   └── transcript.v.1.4.txt
+```
 Coqui TTS의 요구사항
 결론부터 말씀드리면: 파일들을 한 폴더로 모을 필요는 없습니다.
 Coqui TTS는 메타데이터 파일에 지정된 상대 경로나 절대 경로를 따라 오디오 파일을 찾습니다. 현재 폴더 구조를 유지한 채로 메타데이터 파일만 적절히 수정하면 됩니다.
 메타데이터 수정 방법
 기존 KSS 트랜스크립트 파일을 Coqui TTS 형식으로 변환할 때, 파일 경로를 정확히 유지하면 됩니다:
+```
 pythonimport os
 
 def prepare_kss_metadata(transcript_path, output_path, base_path='kss'):
@@ -226,19 +257,24 @@ def prepare_kss_metadata(transcript_path, output_path, base_path='kss'):
     
     print(f"메타데이터 파일 생성 완료: {output_path}")
     print(f"총 {len(metadata)}개 샘플")
+```
 
 # 실행 예시
+```
 prepare_kss_metadata(
     transcript_path="kss/transcript.v.1.4.txt",
     output_path="kss/metadata.csv"
 )
+```
 트레이닝 설정
 학습 시 데이터 경로를 올바르게 설정하는 것이 중요합니다:
+```
 json"dataset": {
     "name": "kss",
     "path": "kss/",  // KSS 폴더 경로 (메타데이터 파일이 있는 곳)
     "meta_file_train": "metadata.csv"
 }
+```
 이렇게 설정하면, 메타데이터 파일의 경로(예: 1/1_0000.wav)에 데이터셋 경로(kss/)가 자동으로 앞에 추가되어 kss/1/1_0000.wav로 파일을 찾게 됩니다.
 메타데이터 구조
 변환된 메타데이터 파일(metadata.csv)의 내용은 다음과 같은 형식이 됩니다:
@@ -247,23 +283,30 @@ json"dataset": {
 2/2_0000.wav|또 다른 한글 텍스트...
 데이터 로더 검증
 학습 시작 전에 데이터 로더가 제대로 작동하는지 테스트해보는 것이 좋습니다:
+```
 pythonfrom TTS.tts.datasets.load import load_tts_samples
 from TTS.tts.utils.text.tokenizer import TTSTokenizer
 from TTS.utils.audio import AudioProcessor
 import json
+```
 
 # 구성 파일 로드
+```
 with open('kss_tacotron2_config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
+```
 
 # 샘플 로드 테스트
+```
 samples = load_tts_samples(
     config['dataset']['path'],
     config['dataset']['meta_file_train'],
     config['text']['cleaner']
 )
+```
 
 # 첫 몇 개 샘플 확인
+```
 for i, sample in enumerate(samples[:5]):
     print(f"샘플 {i+1}:")
     print(f"  - 텍스트: {sample[0]}")
@@ -271,4 +314,5 @@ for i, sample in enumerate(samples[:5]):
     # 파일 존재 확인
     full_path = os.path.join(config['dataset']['path'], sample[1]) 
     print(f"  - 파일 존재: {os.path.exists(full_path)}")
+```
 이렇게 하면 현재 폴더 구조를 유지한 채로 Coqui TTS 모델을 훈련할 수 있습니다. 별도로 모든 WAV 파일을 한 곳에 모을 필요는 없습니다.
