@@ -51,5 +51,5 @@ def convert_kss_to_vits_format(kss_dir, transcript_file, output_dir):
 # 실행
 kss_dir = '/var/step3-tts/kaggle-dataset/kss'
 transcript_file = '/var/step3-tts/kaggle-dataset/transcript.v.1.4.txt'
-output_dir = '/var/step3-tts/output'
+output_dir = '/var/step3-tts/kss-conv'
 convert_kss_to_vits_format(kss_dir, transcript_file, output_dir)
