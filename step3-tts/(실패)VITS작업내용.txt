@@ -2,17 +2,17 @@
 
 📂 1. var 폴더에 step3-tts 폴더 생성
 sudo mkdir /var/step3-tts
-sudo mkdir /var/step3-tts/kaggle-dataset
+sudo mkdir /var/step3-tts/kss-dataset
 
 👤 2. gsi 계정에게 접근 권한 부여
 sudo chown gsi:gsi /var/step3-tts
-sudo chmod 755 /var/step3-tts/kaggle-dataset
+sudo chmod 755 /var/step3-tts/kss-dataset
 
 
 📦 3. 데이터셋 복사
-sudo cp -r /home/gsi/kss-root/* /var/step3-tts/kaggle-dataset/
+sudo cp -r /home/gsi/kss-root/* /var/step3-tts/kss-dataset/
 kaggle-dataset 폴더 안에 kss-root 폴더가 들어가는 게 아니라, 
-kss-root 안의 내용물만 kaggle-dataset에 옮기고 싶다면 이렇게
+kss-root 안의 내용물만 kss-dataset에 옮기고 싶다면 이렇게
 
 
 🐍 4. 파이썬 가상환경 생성 및 활성화
@@ -34,43 +34,12 @@ pip install numpy librosa phonemizer matplotlib tensorboard tqdm
 7. VITS 코드 다운로드 및 requirements 설치
 git clone https://github.com/jaywalnut310/vits.git
 cd vits
-pip install -r requirements.txt
-설치안되서 numpy==1.21.6 로 수정후 다시 실행
-설치 오류가 남.. 
-아래와 같이 수정하고 다시 진행
 
+pip install -r requirements.txt
+아래와 같이 수정후 진행
 numpy==1.21.6
 scipy==1.9.3
 matplotlib==3.5.3
-torch==2.1.2+cu118
-torchaudio==2.1.2+cu118
-librosa==0.10.1
-phonemizer==3.2.1
-tensorboard==2.14.0
-tqdm==4.66.1
-
-이걸 해도 오류가
-
-requirements.txt 에서 torch랑 torchaudio 줄 빼고
-
-pip install torch==2.1.2+cu118 torchaudio==2.1.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
-pip install torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
-pip install -r requirements.txt
-
-오류가 나서 다시 설치
-
-pip install contourpy==1.1.0
-
-좋아! 그러면 지금 상황 정리해서 vits 프로젝트 기준으로 호환 잘 맞는 버전으로 requirements.txt 다시 짜줄게.
-
-
-📦 정리된 requirements.txt
-numpy==1.21.6
-scipy==1.9.3
-matplotlib==3.5.3
-torch==2.1.2+cu118
-torchaudio==2.1.2+cu118
-torchvision==0.16.2+cu118
 contourpy==1.1.0
 phonemizer==3.2.1
 librosa==0.10.1
@@ -87,87 +56,127 @@ pyasn1-modules==0.4.2
 requests-oauthlib==2.0.0
 rsa==4.9.1
 wheel==0.45.1
+
 📌 설치 명령
 이 파일로 requirements.txt 저장하고 아래 명령어 실행:
 
 pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu118
 ※ cu118 전용 패키지(torch/torchaudio/torchvision)는 --extra-index-url 옵션으로 같이 설치 가능해.
 
-8. convert_kss_to_vits_transcript.py 파일 생성
-해당 폴더의 내용들을 확인후
+8. wav파일 패딩 및 문자열 토크나이저 진행
 ```
-1_0000.wav|그는 괜찮은 척하려고 애쓰는 것 같았다.|
+# transscript.v.1.4.txt 파일 토큰화 메뉴얼
+
+1. transcript_conv.py 를 사용해서 우선 필요한 항목 첫번째와 3번재를 추출해서 새로운 파일 conv_transcript.v.1.4.txt 로 생성합니다.
+2. tokenize_text.py 를 사용해서 conv_transcript.v.1.4.txt 파일의 한글을 토큰화 진행하고 tokenized_transcript.v.1.4.txt 로 생성합니다.
+3. token_test.py 를 사용해서 토큰화된 부분들이 정확하게 일치하는지 검증합니다.
+
+# wav 파일 길이 동일하게 패딩처리
+
+1. pad_wav_files.py 를 사용해서 제일 긴 파일을 찾아내고 해당 길이와 동일하게 패딩을 추가해서 저장한다.
+
+pip install numpy librosa soundfile tqdm
+python pad_wav_files.py
+
 ```
-이런 형태로 2개만 가능하게 처리해서 transcript.txt 를 만든다.
-그리고 wav 파일도 몽땅 다 합쳐서 output에 복사되도록 만들었다.
 
+9. config.json 생성 및 필요한 폴더 추가
 
-9. config.json 생성
+```
+{
+    "train_config": {
+      "batch_size": 32,
+      "learning_rate": 0.0001,
+      "lr_decay_rate": 0.999,
+      "lr_decay_steps": 50000,
+      "max_epoch": 1000,
+      "steps_per_checkpoint": 1000,
+      "checkpoint_dir": "/var/step3-tts/checkpoints",
+      "log_dir": "/var/step3-tts/logs",
+      "sample_rate": 44100,
+      "num_mels": 80,
+      "num_freq": 1025,
+      "hop_size": 256,
+      "win_size": 1024,
+      "frame_shift_ms": 12.5,
+      "preemphasis": 0.97,
+      "max_db": 100,
+      "min_db": -100,
+      "ref_level_db": 20,
+      "n_fft": 2048,
+      "hop_length": 256,
+      "win_length": 1024,
+      "use_cuda": true,
+      "cuda_device": 0
+    },
+    "data_config": {
+      "text_cleaners": ["korean_cleaners"],
+      "input_texts_file": "/var/step3-tts/kss-dataset-conv/tokenized_transcript.v.1.4.txt",
+      "audio_dir": "/var/step3-tts/kss-dataset-conv/kss",
+      "train_output_dir": "/var/step3-tts/output"
+    },
+    "model_config": {
+      "encoder_hidden_size": 256,
+      "decoder_hidden_size": 256,
+      "num_layers": 3,
+      "embedding_size": 256,
+      "attention_type": "multihead",
+      "dropout": 0.1
+    },
+    "inference_config": {
+      "use_mel": true,
+      "synthesis_mode": "fast",
+      "pretrained_model_path": "/path/to/pretrained/model"
+    }
+  }
+  
+```
+
 ```
 /var/step3-tts/checkpoints	모델 체크포인트 저장 경로 (G_10000.pth 등)
 /var/step3-tts/logs	학습 로그, TensorBoard 로그 저장 경로
 /var/step3-tts/output	학습 중간 결과물 출력 (샘플 wav 등)
-/var/step3-tts/kaggle-dataset/kss	KSS wav 파일 폴더
-/var/step3-tts/transcript.txt	이미 생성한 학습용 텍스트 목록
+/var/step3-tts/kss-dataset-conv/kss	KSS wav 파일 폴더
+/var/step3-tts/kss-dataset-conv/tokenized_transcript.v.1.4.txt	텍스트
 
 sudo mkdir -p /var/step3-tts/checkpoints
 sudo mkdir -p /var/step3-tts/logs
 sudo mkdir -p /var/step3-tts/output
 
 sudo chown -R gsi:gsi /var/step3-tts
+```
 
+10. monotonic_align 컴파일
+```
+cd /var/step3-tts/vits/monotonic_align
+
+pip install cython
+
+# 컴파일 실행
+python setup.py build_ext --inplace
+
+# 파일 이동
+mv /var/step3-tts/vits/monotonic_align/monotonic_align/core.cpython-310-x86_64-linux-gnu.so \
+   /var/step3-tts/vits/monotonic_align/
+```
+
+11. 빌드 및 실행
+```
 python3 ./vits/train.py --config /var/step3-tts/config.json --model vits
 
+# 필요시 이 부분도 해야함
+pip install numpy==1.23.5
+pip install unidecode
 ```
 
+12. 추가로 코드 수정
 ```
-{
-    "train_config": {
-      "batch_size": 32,                      // 배치 크기 (RTX 3090에 적합하게 32로 설정)
-      "learning_rate": 0.0001,               // 학습률
-      "lr_decay_rate": 0.999,                // 학습률 감소 비율
-      "lr_decay_steps": 50000,               // 학습률 감소 스텝
-      "max_epoch": 1000,                     // 학습 최대 epoch 수
-      "steps_per_checkpoint": 1000,          // 체크포인트 저장 주기 (step 단위)
-      "checkpoint_dir": "/var/step3-tts/checkpoints", // 체크포인트 저장 디렉토리
-      "log_dir": "/var/step3-tts/logs",            // 로그 디렉토리
-      "sample_rate": 22050,                  // 샘플링 주파수 (KSS는 22050 Hz)
-      "num_mels": 80,                        // Mel spectrogram의 주파수 수
-      "num_freq": 1025,                      // FFT 크기
-      "hop_size": 256,                       // hop 크기 (길이)
-      "win_size": 1024,                      // 윈도우 크기 (FFT 길이)
-      "frame_shift_ms": 12.5,                // 시간 간격
-      "preemphasis": 0.97,                   // 전처리에서의 강조 비율
-      "max_db": 100,                         // 최댓값 dB
-      "min_db": -100,                        // 최솟값 dB
-      "ref_level_db": 20,                    // 참조 레벨 dB
-      "n_fft": 2048,                         // FFT 크기
-      "hop_length": 256,                     // Hop 길이
-      "win_length": 1024,                    // 윈도우 길이
-      "use_cuda": true,                      // CUDA 사용 여부
-      "cuda_device": 0                       // 사용할 GPU (0번은 첫 번째 GPU)
-    },
-    "data_config": {
-      "text_cleaners": ["korean_cleaners"], // 한글 텍스트 정리기를 사용할 것
-      "input_texts_file": "/var/step3-tts/transcript.txt", // transcript.txt 경로
-      "audio_dir": "/var/step3-tts/kaggle-dataset/kss",          // KSS 오디오 파일 경로
-      "train_output_dir": "/var/step3-tts/output"        // 학습 후 결과물 저장 경로
-    },
-    "model_config": {
-      "encoder_hidden_size": 256,           // 인코더 히든 레이어 크기
-      "decoder_hidden_size": 256,           // 디코더 히든 레이어 크기
-      "num_layers": 3,                      // 네트워크 층 수
-      "embedding_size": 256,                // 텍스트 임베딩 크기
-      "attention_type": "multihead",        // 어텐션 타입 (multihead 추천)
-      "dropout": 0.1                        // 드롭아웃 비율
-    },
-    "inference_config": {
-      "use_mel": true,                      // 멜 스펙트로그램 사용 여부
-      "synthesis_mode": "fast",              // 합성 모드 ('fast' or 'accurate')
-      "pretrained_model_path": "/path/to/pretrained/model"  // 미리 학습된 모델 경로
-    }
-  }
-  
+vits/monotonic_align/__init__.py
+#from .monotonic_align.core import maximum_path_c
+from .core import maximum_path_c
+
+vits/train.py
+os.environ['MASTER_PORT'] = '50000'
 ```
 
 # 다시 해봐야 하는 부분
