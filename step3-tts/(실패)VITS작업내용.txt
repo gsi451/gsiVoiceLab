@@ -195,3 +195,6 @@ python3 ./vits/train.py --config /var/step3-tts/config.json --model vits
 
 # 이후 참고한 자료들
 https://arca.live/b/aispeech/72903471
+https://arca.live/b/aispeech/84160055
+
+https://arca.live/b/aispeech/84160055
