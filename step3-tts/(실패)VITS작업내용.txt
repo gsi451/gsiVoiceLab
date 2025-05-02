@@ -191,3 +191,7 @@ pt를 지우고 다시 시작할때
 find /var/step3-tts/kss-conv -name "*.spec.pt" -delete
 
 python3 ./vits/train.py --config /var/step3-tts/config.json --model vits
+
+
+# 이후 참고한 자료들
+https://arca.live/b/aispeech/72903471
